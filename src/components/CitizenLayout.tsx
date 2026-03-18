@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
-import { Radio, AlertTriangle, FileText, LogOut, MessageSquare } from 'lucide-react';
+import { Radio, AlertTriangle, FileText, LogOut, MessageSquare, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function CitizenLayout({ children }: { children: React.ReactNode }) {
@@ -33,6 +33,21 @@ export function CitizenLayout({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
             ))}
+            <a 
+              href="https://whatsapp.com/channel/0029Vb7OLvnJuyA6FLgPyg2w" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-2"
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-[#25D366] hover:text-[#1DA851] hover:bg-[#25D366]/10"
+              >
+                <MessageCircle className="w-4 h-4 fill-current" />
+                <span className="hidden md:inline">Flood Alerts Channel</span>
+              </Button>
+            </a>
           </div>
         </div>
         <div className="flex items-center gap-3">

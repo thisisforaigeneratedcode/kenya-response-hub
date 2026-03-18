@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { KENYA_COUNTIES } from '@/lib/supabase';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Radio, AlertTriangle } from 'lucide-react';
+import { Radio, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AuthPage() {
@@ -17,6 +17,7 @@ export default function AuthPage() {
   const [role, setRole] = useState('citizen');
   const [county, setCounty] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -31,12 +32,11 @@ export default function AuthPage() {
           return;
         }
         await signUp(email, password, { full_name: fullName, role, county });
-        toast.success('Account created! Redirecting...');
+        toast.success('Account created! Please check your email to confirm if required, or wait to be redirected.');
       } else {
         await signIn(email, password);
         toast.success('Signed in successfully');
       }
-      // Redirect will happen via useEffect in App
     } catch (err: any) {
       toast.error(err.message || 'Authentication failed');
     } finally {
@@ -45,11 +45,12 @@ export default function AuthPage() {
   };
 
   // Redirect if already authed
-  if (profile) {
-    const dest = profile.role === 'citizen' ? '/report' : profile.role === 'responder' ? '/dashboard' : '/admin';
-    navigate(dest, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (profile) {
+      const dest = profile.role === 'citizen' ? '/report' : profile.role === 'responder' ? '/dashboard' : '/admin';
+      navigate(dest, { replace: true });
+    }
+  }, [profile, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -122,15 +123,24 @@ export default function AuthPage() {
 
           <div>
             <Label className="text-foreground">Password</Label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-background border-border text-foreground mt-1"
-              required
-              minLength={6}
-            />
+            <div className="relative mt-1">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-background border-border text-foreground pr-10"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <Button

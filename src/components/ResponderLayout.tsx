@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
-import { Radio, LayoutDashboard, Map, ShieldCheck, LogOut } from 'lucide-react';
+import { Radio, LayoutDashboard, Map, ShieldCheck, LogOut, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -42,8 +42,23 @@ export function ResponderLayout({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="p-3 border-t border-border">
-          <div className="hidden lg:block mb-2">
+        <div className="p-3 border-t border-border space-y-2">
+          <a 
+            href="https://whatsapp.com/channel/0029Vb7OLvnJuyA6FLgPyg2w" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full justify-start gap-2 text-[#25D366] hover:text-[#1DA851] hover:bg-[#25D366]/10"
+            >
+              <MessageCircle className="w-4 h-4 fill-current" />
+              <span className="hidden lg:inline text-xs font-semibold">Flood Alerts Channel</span>
+            </Button>
+          </a>
+          <div className="hidden lg:block mb-2 px-2">
             <p className="text-sm text-foreground truncate">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{profile?.role}</p>
           </div>

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { AISafetyGuide } from '@/components/AISafetyGuide';
-import { MapPin, Upload, Loader2, CheckCircle2, Navigation } from 'lucide-react';
+import { MapPin, Upload, Loader2, CheckCircle2, Navigation, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { CitizenLayout } from '@/components/CitizenLayout';
 
@@ -108,11 +108,25 @@ export default function ReportPage() {
     return (
       <CitizenLayout>
         <div className="max-w-2xl mx-auto p-6">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <CheckCircle2 className="w-16 h-16 text-success mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-foreground">Report Submitted</h2>
             <p className="text-muted-foreground mt-1">Your incident is being reviewed by responders</p>
           </div>
+          
+          <div className="glass-card bg-[#25D366]/5 border-[#25D366]/20 p-5 mb-8 text-center rounded-xl mx-auto max-w-md">
+            <h3 className="font-semibold text-foreground text-sm flex items-center justify-center gap-2">
+              <MessageCircle className="w-5 h-5 text-[#25D366]" />
+              Your report has been submitted. Stay informed:
+            </h3>
+            <a href="https://whatsapp.com/channel/0029Vb7OLvnJuyA6FLgPyg2w" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block w-full">
+              <Button className="bg-[#25D366] hover:bg-[#1DA851] text-white font-medium shadow-md shadow-[#25D366]/20 gap-2 w-full">
+                <MessageCircle className="w-4 h-4 fill-current" />
+                Follow our WhatsApp channel for updates
+              </Button>
+            </a>
+          </div>
+
           <AISafetyGuide guide={triageResult.safetyGuide} severity={triageResult.severity} className="mb-6" />
           <div className="flex gap-3 justify-center">
             <Button onClick={() => { setSubmitted(false); setTriageResult(null); setTitle(''); setDescription(''); }} variant="outline" className="border-border-strong text-foreground hover:bg-secondary">
