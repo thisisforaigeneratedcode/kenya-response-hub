@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          created_at: string
+          id: string
+          incident_id: string
+          recipient: string | null
+          sent_at: string | null
+          status: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incident_id: string
+          recipient?: string | null
+          sent_at?: string | null
+          status?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incident_id?: string
+          recipient?: string | null
+          sent_at?: string | null
+          status?: string | null
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignments: {
         Row: {
           assigned_at: string
@@ -48,7 +86,11 @@ export type Database = {
       }
       incidents: {
         Row: {
+          ai_affected_count: number | null
+          ai_flood_type: string | null
+          ai_reasoning: string | null
           ai_safety_guide: string | null
+          ai_score: number | null
           ai_severity: number | null
           county: string
           created_at: string
@@ -59,12 +101,18 @@ export type Database = {
           lng: number | null
           photo_url: string | null
           reporter_id: string
+          safety_tips: Json | null
           severity_self: number
           status: string
           title: string
+          updated_at: string
         }
         Insert: {
+          ai_affected_count?: number | null
+          ai_flood_type?: string | null
+          ai_reasoning?: string | null
           ai_safety_guide?: string | null
+          ai_score?: number | null
           ai_severity?: number | null
           county: string
           created_at?: string
@@ -75,12 +123,18 @@ export type Database = {
           lng?: number | null
           photo_url?: string | null
           reporter_id: string
+          safety_tips?: Json | null
           severity_self?: number
           status?: string
           title: string
+          updated_at?: string
         }
         Update: {
+          ai_affected_count?: number | null
+          ai_flood_type?: string | null
+          ai_reasoning?: string | null
           ai_safety_guide?: string | null
+          ai_score?: number | null
           ai_severity?: number | null
           county?: string
           created_at?: string
@@ -91,9 +145,11 @@ export type Database = {
           lng?: number | null
           photo_url?: string | null
           reporter_id?: string
+          safety_tips?: Json | null
           severity_self?: number
           status?: string
           title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -159,12 +215,48 @@ export type Database = {
         }
         Relationships: []
       }
+      shelters: {
+        Row: {
+          capacity: number | null
+          contact: string | null
+          county: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          type: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          contact?: string | null
+          county: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          type?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          contact?: string | null
+          county?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
