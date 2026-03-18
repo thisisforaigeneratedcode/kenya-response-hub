@@ -13,6 +13,11 @@ export default function LandingPage() {
   const [incidentCount, setIncidentCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [shelters, setShelters] = useState<any[]>([]);
+  const [incidents, setIncidents] = useState<any[]>([]);
+
+  const severityColors: Record<number, string> = {
+    5: '#ef4444', 4: '#f97316', 3: '#38bdf8', 2: '#34d399', 1: '#34d399',
+  };
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -23,6 +28,12 @@ export default function LandingPage() {
     };
     fetchCounts();
 
+    const fetchIncidents = async () => {
+      const { data } = await supabase.from('incidents').select('*').not('lat', 'is', null).not('lng', 'is', null);
+      setIncidents(data || []);
+    };
+    fetchIncidents();
+
     const fetchShelters = async () => {
       const { data } = await supabase.from('shelters' as any).select('*');
       setShelters(data || []);
@@ -30,9 +41,10 @@ export default function LandingPage() {
     fetchShelters();
 
     const channel = supabase
-      .channel('landing-counts')
+      .channel('landing-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'incidents' }, () => {
         fetchCounts();
+        fetchIncidents();
       })
       .subscribe();
 
@@ -143,19 +155,49 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="glass-card p-8"
         >
-          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Active Safe Zones & Shelters</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2 text-center">Live Disaster Map</h2>
+          <p className="text-muted-foreground text-center mb-8 text-sm">Real-time situational awareness for all Kenyan residents.</p>
           <div className="relative aspect-[16/9] w-full rounded-xl bg-background/60 overflow-hidden border border-border z-0">
             <MapContainer
               center={[0.0236, 37.9062]}
               zoom={6}
               style={{ height: '100%', width: '100%' }}
-              zoomControl={false}
-              scrollWheelZoom={false}
+              zoomControl={true}
+              scrollWheelZoom={true}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; OpenStreetMap'
               />
+              {incidents.map((inc) => {
+                const sev = inc.ai_severity ?? inc.severity_self;
+                const color = severityColors[sev] || '#38bdf8';
+                return (
+                  <CircleMarker
+                    key={inc.id}
+                    center={[inc.lat!, inc.lng!]}
+                    radius={sev >= 4 ? 14 : 8}
+                    fillColor={color}
+                    color={color}
+                    weight={sev >= 5 ? 4 : 2}
+                    fillOpacity={sev >= 5 ? 0.8 : 0.6}
+                    className={sev >= 5 ? 'pulse-zone' : ''}
+                  >
+                    <Popup>
+                      <div className="text-foreground">
+                        <h4 className="font-semibold text-sm">{inc.title}</h4>
+                        <p className="text-xs mt-1">{inc.county} · {inc.incident_type}</p>
+                        <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
+                          <span className="text-[10px] uppercase font-bold tracking-wider opacity-70">Severity</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${sev >= 4 ? 'bg-destructive/20 text-destructive' : 'bg-primary/20 text-primary'}`}>
+                            {sev >= 5 ? 'CRITICAL' : sev >= 4 ? 'HIGH' : 'STABLE'}
+                          </span>
+                        </div>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
               {shelters.map((s) => (
                 <CircleMarker
                   key={`shelter-${s.id}`}
@@ -176,12 +218,6 @@ export default function LandingPage() {
                 </CircleMarker>
               ))}
             </MapContainer>
-            
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400]">
-               <div className="bg-background/90 backdrop-blur px-4 py-2 rounded-full border border-border text-sm font-medium text-foreground shadow-lg whitespace-nowrap">
-                 Sign in as a Responder to view live incidents
-               </div>
-            </div>
             <div className="absolute inset-0 pointer-events-none z-[400] shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]" />
           </div>
         </motion.div>

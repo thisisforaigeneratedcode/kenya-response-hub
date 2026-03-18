@@ -138,22 +138,31 @@ export default function ReportPage() {
       setTriaging(true);
       
       let finalTriage = null;
-      try {
-        finalTriage = await triageIncident(incident as any);
-        setTriageResult(finalTriage);
-
-        // Update incident with AI results
-        await supabase
-          .from('incidents')
-          .update({ ai_severity: finalTriage.severity, ai_safety_guide: finalTriage.safetyGuide })
-          .eq('id', incident.id);
-      } catch (aiErr) {
-        // Fallback: Make it look like a background process instead of a failure
+      if (mode === "SOS") {
+        // Zero-latency path for SOS
         finalTriage = {
-          severity: severity[0],
-          safetyGuide: "Your report is being analyzed by our AI system in the background. Specialized emergency guidance will be sent to your device shortly. Local responders are already coordinating based on your location."
+          severity: 5,
+          safetyGuide: "CRITICAL SOS ALERT: Emergency responders are being dispatched to your location instantly. Do not leave your area unless it is unsafe to stay. If you can, seek higher ground or a secure shelter immediately. Stay calm and keep your phone charged."
         };
         setTriageResult(finalTriage);
+      } else {
+        try {
+          finalTriage = await triageIncident(incident as any);
+          setTriageResult(finalTriage);
+  
+          // Update incident with AI results
+          await supabase
+            .from('incidents')
+            .update({ ai_severity: finalTriage.severity, ai_safety_guide: finalTriage.safetyGuide })
+            .eq('id', incident.id);
+        } catch (aiErr) {
+          // Fallback if AI fails: use user's self-reported severity
+          finalTriage = {
+            severity: finalSeverity,
+            safetyGuide: "Your report is being analyzed by our AI system in the background. Specialized emergency guidance will be sent to your device shortly. Local responders are already coordinating based on your location."
+          };
+          setTriageResult(finalTriage);
+        }
       }
 
       setTriaging(false);

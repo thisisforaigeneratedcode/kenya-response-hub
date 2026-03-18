@@ -105,6 +105,16 @@
   backdrop-filter: blur(12px);
 }
 
+/* Leaflet SVG Pulsing */
+@keyframes leaflet-pulse {
+  0% { stroke-width: 2; stroke-opacity: 1; }
+  70% { stroke-width: 15; stroke-opacity: 0; }
+  100% { stroke-width: 2; stroke-opacity: 0; }
+}
+.pulse-zone {
+  animation: leaflet-pulse 2s ease-out infinite;
+}
+
 /* Leaflet dark overrides */
 .leaflet-container {
   background: #0f172a !important;

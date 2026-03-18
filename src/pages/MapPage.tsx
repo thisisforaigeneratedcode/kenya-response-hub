@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { KENYA_COUNTIES } from '@/lib/supabase';
 
 const severityColors: Record<number, string> = {
-  5: '#fb7185', 4: '#f59e0b', 3: '#38bdf8', 2: '#34d399', 1: '#34d399',
+  5: '#ef4444', 4: '#f97316', 3: '#38bdf8', 2: '#34d399', 1: '#34d399',
 };
 
 export default function MapPage() {
@@ -85,11 +85,12 @@ export default function MapPage() {
                 <CircleMarker
                   key={inc.id}
                   center={[inc.lat!, inc.lng!]}
-                  radius={sev >= 4 ? 12 : 8}
+                  radius={sev >= 4 ? 14 : 8}
                   fillColor={color}
                   color={color}
-                  weight={2}
-                  fillOpacity={0.6}
+                  weight={sev >= 5 ? 4 : 2}
+                  fillOpacity={sev >= 5 ? 0.8 : 0.6}
+                  className={sev >= 5 ? 'pulse-zone' : ''}
                 >
                   <Popup>
                     <div className="text-foreground">

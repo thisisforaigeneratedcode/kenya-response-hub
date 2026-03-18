@@ -72,7 +72,10 @@ serve(async (req) => {
       })
     }
 
-    // 5. Send Email via Resend
+    // 5. Build Dynamic Recipients
+    const to = bccList.length === 1 ? [bccList[0]] : ['alerts@cnbcode.com']
+    const bcc = bccList.length === 1 ? [] : bccList
+
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not set")
 
@@ -84,20 +87,25 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Kaa-Rada Alerts <alerts@cnbcode.com>',
-        to: ['alerts@cnbcode.com'], // Primary recipient
-        bcc: bccList, // Real responders BCC'd
+        to: to,
+        bcc: bcc,
         subject: `[Kaa-Rada] ${subject}`,
         html: `
           <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 16px; border: 1px solid #334155;">
-            <p style="color: #fb7185; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Kaa-Rada Critical Alert</p>
+            <p style="color: ${subject.toLowerCase().includes('safety') ? '#38bdf8' : '#fb7185'}; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+              ${subject.toLowerCase().includes('safety') ? 'Kaa-Rada Survival Guide' : 'Kaa-Rada Critical Alert'}
+            </p>
             <h2 style="margin-top: 0; color: #f8fafc;">${subject}</h2>
-            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; margin: 20px 0; line-height: 1.6;">
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; margin: 20px 0; line-height: 1.6; white-space: pre-wrap;">
               ${message}
             </div>
             <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
             <p style="font-size: 12px; color: #94a3b8;">
-              This is an automated system notification from your command center.
-              <br />Log in to the <a href="https://kaarada.cnbcode.com" style="color: #38bdf8; text-decoration: none;">Responder Dashboard</a> for full details.
+              ${subject.toLowerCase().includes('safety') 
+                ? 'Follow these steps carefully while you wait for our response team. Stay safe.' 
+                : 'This is an automated system notification from your command center.'
+              }
+              <br />Log in to the <a href="https://kaarada.cnbcode.com" style="color: #38bdf8; text-decoration: none;">Kaa-Rada Dashboard</a> for more details.
             </p>
           </div>
         `
