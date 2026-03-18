@@ -39,18 +39,36 @@ export default function ReportPage() {
   }, []);
 
   const detectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
     setDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLat(pos.coords.latitude.toFixed(6));
         setLng(pos.coords.longitude.toFixed(6));
         setDetectingLocation(false);
-        toast.success('Location detected');
+        toast.success('Location detected successfully');
       },
-      () => {
-        toast.error('Could not detect location');
+      (error) => {
         setDetectingLocation(false);
-      }
+        switch (error.code) {
+          case 1:
+            toast.error('Permission denied. Please enable location access.');
+            break;
+          case 2:
+            toast.error('Location unavailable. Please check your GPS/Network.');
+            break;
+          case 3:
+            toast.error('Location request timed out.');
+            break;
+          default:
+            toast.error('Could not detect location. Please enter manually.');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
@@ -94,14 +112,24 @@ export default function ReportPage() {
       // AI Triage
       setSubmitting(false);
       setTriaging(true);
-      const result = await triageIncident(incident as any);
-      setTriageResult(result);
+      
+      try {
+        const result = await triageIncident(incident as any);
+        setTriageResult(result);
 
-      // Update incident with AI results
-      await supabase
-        .from('incidents')
-        .update({ ai_severity: result.severity, ai_safety_guide: result.safetyGuide })
-        .eq('id', incident.id);
+        // Update incident with AI results
+        await supabase
+          .from('incidents')
+          .update({ ai_severity: result.severity, ai_safety_guide: result.safetyGuide })
+          .eq('id', incident.id);
+      } catch (aiErr) {
+        console.error("AI Triage failed:", aiErr);
+        // Fallback to minimal success state if AI fails
+        setTriageResult({
+          severity: severity[0],
+          safetyGuide: "Stay calm. We have received your report. If in immediate danger, move to the nearest safe ground and contact local authorities."
+        });
+      }
 
       setTriaging(false);
       setSubmitted(true);
@@ -226,6 +254,18 @@ export default function ReportPage() {
                 className="bg-background border-border text-foreground mt-1" 
                 required 
               />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret'].map(city => (
+                  <button
+                    key={city}
+                    type="button"
+                    onClick={() => setTown(city)}
+                    className="text-[10px] px-2 py-1 rounded-full bg-secondary border border-border hover:bg-primary/20 hover:border-primary/40 transition-colors text-muted-foreground hover:text-foreground"
+                  >
+                    + {city}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
