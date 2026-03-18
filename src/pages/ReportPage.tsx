@@ -10,14 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { AISafetyGuide } from '@/components/AISafetyGuide';
-import { MapPin, Upload, Loader2, CheckCircle2, Navigation } from 'lucide-react';
+import { MapPin, Upload, Loader2, CheckCircle2, Navigation, AlertCircle, Waves, Flame, Activity, Skull, X } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 import { toast } from 'sonner';
 import { CitizenLayout } from '@/components/CitizenLayout';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ReportPage() {
   const { user } = useAuth();
+  const [isSOS, setIsSOS] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [incidentType, setIncidentType] = useState('');
@@ -72,10 +73,33 @@ export default function ReportPage() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSOS = async (type: string) => {
+    if (!user) return;
+    setSubmitting(true);
+    setIncidentType(type);
+    setTitle(`EMERGENCY: ${type}`);
+    setDescription(`Immediate assistance required for ${type}. Reported via SOS mode.`);
+    setSeverity([5]);
+
+    // Ensure location is ready
+    if (!lat) {
+      toast.info("Capturing location...");
+      // Wait a bit for GPS to settle if not already captured
+    }
+
+    // We call handleSubmit manually by passing a fake event
+    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(fakeEvent, type, "SOS");
+  };
+
+  const handleSubmit = async (e: React.FormEvent, overrideType?: string, mode?: string) => {
     e.preventDefault();
     if (!user) return;
     setSubmitting(true);
+
+    const finalType = overrideType || incidentType;
+    const finalDesc = mode === "SOS" ? `Immediate assistance required for ${finalType}. Reported via SOS mode.` : description;
+    const finalSeverity = mode === "SOS" ? 5 : severity[0];
 
     try {
       let photoUrl: string | null = null;
@@ -140,9 +164,19 @@ export default function ReportPage() {
       if (finalTriage.severity >= 4) {
         const { sendBroadcast } = await import('@/lib/supabase');
         sendBroadcast(
-          `CRITICAL: ${incidentType} in ${town || county}`,
-          `A high-severity ${incidentType} has been reported in ${town ? `${town}, ${county}` : county}.\n\nDescription: ${description}\n\nView details: ${window.location.origin}/dashboard`
+          `CRITICAL: ${finalType} in ${town || county}`,
+          `A high-severity ${finalType} has been reported in ${town ? `${town}, ${county}` : county}.\n\nDescription: ${finalDesc}\n\nView details: ${window.location.origin}/dashboard`
         ).catch(e => console.error("Auto-broadcast failed:", e));
+
+        // ALSO: Send safety guide to victim via email
+        if (user.email) {
+          sendBroadcast(
+            `Safety Guidance: ${finalType} Emergency`,
+            `Your report has been received. Please follow these AI-generated safety steps immediately:\n\n${finalTriage.safetyGuide}\n\nResponders have been notified of your location. Stay calm.`,
+            undefined,
+            [user.email]
+          ).catch(e => console.error("Safety email failed:", e));
+        }
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit report');
@@ -204,9 +238,68 @@ export default function ReportPage() {
 
   return (
     <CitizenLayout>
-      <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Report an Incident</h1>
-        <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="max-w-2xl mx-auto p-6 relative">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-foreground">Report an Incident</h1>
+          <Button 
+            onClick={() => setIsSOS(!isSOS)} 
+            variant={isSOS ? "destructive" : "outline"}
+            className={`gap-2 ${!isSOS ? 'border-destructive/50 text-destructive hover:bg-destructive/10' : 'bg-destructive text-white'}`}
+          >
+            {isSOS ? <X className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            {isSOS ? 'Exit SOS Mode' : 'SOS Mode'}
+          </Button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {isSOS ? (
+            <motion.div 
+              key="sos-mode"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="space-y-6"
+            >
+              <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-xl text-center">
+                <p className="text-destructive font-bold text-lg">EMERGENCY SOS MODE</p>
+                <p className="text-xs text-muted-foreground">Tap an incident type for one-click reporting with priority triage.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Flooding', icon: <Waves className="w-8 h-8" />, color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+                  { label: 'Fire', icon: <Flame className="w-8 h-8" />, color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+                  { label: 'Medical', icon: <Activity className="w-8 h-8" />, color: 'bg-red-500/10 text-red-500 border-red-500/20' },
+                  { label: 'Danger', icon: <Skull className="w-8 h-8" />, color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => handleSOS(item.label)}
+                    disabled={submitting}
+                    className={`flex flex-col items-center justify-center p-8 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 ${item.color} h-48`}
+                  >
+                    {item.icon}
+                    <span className="mt-4 font-bold text-lg">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4 rounded-lg bg-background border border-border flex items-center justify-center gap-3">
+                <MapPin className={`w-4 h-4 ${lat ? 'text-success' : 'text-muted-foreground animate-pulse'}`} />
+                <span className="text-sm font-medium">
+                  {lat ? `Location Captured: ${lat.slice(0, 8)}, ${lng.slice(0, 8)}` : 'Waiting for GPS...'}
+                </span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.form 
+              key="regular-mode"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={handleSubmit} 
+              className="space-y-5"
+            >
           <div>
             <Label className="text-foreground">Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Brief incident title" className="bg-background border-border text-foreground mt-1" required />
@@ -351,7 +444,9 @@ export default function ReportPage() {
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
             Submit Report
           </Button>
-        </form>
+        </motion.form>
+          )}
+        </AnimatePresence>
       </div>
     </CitizenLayout>
   );
