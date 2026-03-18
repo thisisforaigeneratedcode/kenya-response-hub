@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { KENYA_COUNTIES, INCIDENT_TYPES, Message } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
@@ -300,6 +301,13 @@ export default function DashboardPage() {
                         OPEN FULL CHAT
                       </Button>
                     </Link>
+
+                    <a href="https://wa.me/254114399034" target="_blank" rel="noopener noreferrer" className="block w-full">
+                      <Button variant="outline" className="w-full border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/5 gap-2 mt-2 font-bold text-xs h-9">
+                        <WhatsAppIcon className="w-4 h-4" />
+                        CONTACT SUPPORT IN REAL TIME
+                      </Button>
+                    </a>
                   </div>
                 )}
               </div>

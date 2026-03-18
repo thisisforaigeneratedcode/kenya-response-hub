@@ -10,6 +10,7 @@ import { StatusTimeline } from '@/components/StatusTimeline';
 import { Send, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 
 export default function MessagesPage() {
   const { incidentId } = useParams<{ incidentId: string }>();
@@ -208,6 +209,22 @@ export default function MessagesPage() {
             ))
           )}
           
+          <div className="mt-8 pt-8 border-t border-border">
+             <h4 className="text-[10px] font-bold text-[#25D366] uppercase tracking-widest mb-3 flex items-center gap-2">
+               <WhatsAppIcon className="w-3 h-3" />
+               Priority WhatsApp Support
+             </h4>
+             <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed">
+               If your signal is weak or the live chat is delayed, contact our expert dispatchers directly on WhatsApp.
+             </p>
+             <a href="https://wa.me/254114399034" target="_blank" rel="noopener noreferrer">
+               <Button variant="outline" size="sm" className="w-full border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/5 font-bold text-[11px] h-9">
+                 <WhatsAppIcon className="w-4 h-4 mr-2" />
+                 MESSENGER SUPPORT
+               </Button>
+             </a>
+          </div>
+
           <div className="mt-8 pt-8 border-t border-border">
              <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-3">Critical Actions</h4>
              <ul className="space-y-3 text-xs text-muted-foreground">

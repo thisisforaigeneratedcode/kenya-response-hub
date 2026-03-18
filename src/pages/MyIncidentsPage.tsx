@@ -7,7 +7,8 @@ import { StatusTimeline } from '@/components/StatusTimeline';
 import { CitizenLayout } from '@/components/CitizenLayout';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, MessageSquare } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 
 export default function MyIncidentsPage() {
   const { user } = useAuth();
@@ -79,11 +80,20 @@ export default function MyIncidentsPage() {
                    <div className="w-full sm:w-auto">
                      <StatusTimeline status={inc.status} />
                    </div>
-                   <Link to={`/messages/${inc.id}`} className="w-full sm:w-auto">
-                     <Button size="sm" className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold transition-all px-8">
-                       OPEN LIVE CHAT
-                     </Button>
-                   </Link>
+                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                     <Link to={`/messages/${inc.id}`} className="flex-1 sm:flex-none">
+                       <Button size="sm" className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold transition-all px-6">
+                         <MessageSquare className="w-4 h-4 mr-2" />
+                         LIVE CHAT
+                       </Button>
+                     </Link>
+                     <a href="https://wa.me/254114399034" target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                       <Button size="sm" variant="outline" className="w-full border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/5 font-bold px-6">
+                         <WhatsAppIcon className="w-4 h-4 mr-2" />
+                         WHATSAPP
+                       </Button>
+                     </a>
+                   </div>
                 </div>
               </div>
             ))}
