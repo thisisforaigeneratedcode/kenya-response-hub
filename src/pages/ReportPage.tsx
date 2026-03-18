@@ -148,7 +148,7 @@ export default function ReportPage() {
         // Zero-latency path for SOS
         finalTriage = {
           severity: 5,
-          safetyGuide: "CRITICAL SOS ALERT: Emergency responders are being dispatched to your location instantly. Do not leave your area unless it is unsafe to stay. If you can, seek higher ground or a secure shelter immediately. Stay calm and keep your phone charged."
+          safetyGuide: "PRIORITY EMERGENCY PROTOCOL: Local response teams are being dispatched to your coordinates instantly. Do not leave your area unless it is unsafe to stay. If possible, seek high ground or a designated safe zone immediately. Maintain communication via this hub and keep your device active."
         };
         setTriageResult(finalTriage);
       } else {
@@ -156,16 +156,16 @@ export default function ReportPage() {
           finalTriage = await triageIncident(incident as any);
           setTriageResult(finalTriage);
   
-          // Update incident with AI results
+          // Update incident with results
           await supabase
             .from('incidents')
             .update({ ai_severity: finalTriage.severity, ai_safety_guide: finalTriage.safetyGuide })
             .eq('id', incident.id);
         } catch (aiErr) {
-          // Fallback if AI fails: use user's self-reported severity
+          // Fallback: Use self-reported severity
           finalTriage = {
             severity: finalSeverity,
-            safetyGuide: "Your report is being analyzed by our AI system in the background. Specialized emergency guidance will be sent to your device shortly. Local responders are already coordinating based on your location."
+            safetyGuide: "Your report has been received by the Kaa-Rada Command Center. Verified safety guidance will be dispatched to your device shortly. Local responders are already coordinating based on your reported location."
           };
           setTriageResult(finalTriage);
         }
@@ -180,7 +180,7 @@ export default function ReportPage() {
       if (user.email) {
         sendBroadcast(
           `Personal Safety Guidance: ${finalType}`,
-          `Your report has been received. Please follow these AI-generated safety steps immediately:\n\n${finalTriage.safetyGuide}\n\nResponders have been notified of your location. Stay calm.`,
+          `Your report has been formally received by the Kaa-Rada Hub. Please follow these verified safety instructions immediately:\n\n${finalTriage.safetyGuide}\n\nOur response teams have been notified of your exact location in ${town || county}. Please remain calm and await further contact.`,
           undefined,
           [user.email]
         ).catch(e => console.error("Safety email failed:", e));

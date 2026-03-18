@@ -105,10 +105,11 @@ export async function triageIncident(incident: Partial<Incident>): Promise<{ sev
     }
 
     const prompt = `
-      You are an emergency disaster response AI for Kenya. 
+      You are an expert dispatcher for the Kaa-Rada Disaster Management Hub in Kenya. 
       Analyze the following incident report and provide:
       1. A severity score from 1 (minor) to 5 (critical/life-threatening).
-      2. Life-saving safety guidance for the citizen in 2-3 short, clear sentences.
+      2. Professional, life-saving safety instructions for the citizen in 2-3 short, clear sentences.
+      Focus on immediate, actionable steps. Do not mention that you are an AI.
 
       Title: ${incident.title}
       Description: ${incident.description}

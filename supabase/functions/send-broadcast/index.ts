@@ -91,22 +91,28 @@ serve(async (req) => {
         bcc: bcc,
         subject: `[Kaa-Rada] ${subject}`,
         html: `
-          <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 16px; border: 1px solid #334155;">
-            <p style="color: ${subject.toLowerCase().includes('safety') ? '#38bdf8' : '#fb7185'}; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-              ${subject.toLowerCase().includes('safety') ? 'Kaa-Rada Survival Guide' : 'Kaa-Rada Critical Alert'}
-            </p>
-            <h2 style="margin-top: 0; color: #f8fafc;">${subject}</h2>
-            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; margin: 20px 0; line-height: 1.6; white-space: pre-wrap;">
-              ${message}
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; border-radius: 20px; border: 1px solid #1e293b; max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <span style="background: ${subject.toLowerCase().includes('safety') ? '#38bdf8' : '#ef4444'}; color: #fff; padding: 6px 12px; border-radius: 99px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                ${subject.toLowerCase().includes('safety') ? 'Responder Coordinated Guide' : 'Priority Action Required'}
+              </span>
+              <h2 style="margin-top: 15px; color: #fff; font-size: 24px;">Kaa-Rada Hub Notification</h2>
             </div>
-            <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #94a3b8;">
-              ${subject.toLowerCase().includes('safety') 
-                ? 'Follow these steps carefully while you wait for our response team. Stay safe.' 
-                : 'This is an automated system notification from your command center.'
-              }
-              <br />Log in to the <a href="https://kaarada.cnbcode.com" style="color: #38bdf8; text-decoration: none;">Kaa-Rada Dashboard</a> for more details.
-            </p>
+            
+            <div style="border-left: 4px solid ${subject.toLowerCase().includes('safety') ? '#38bdf8' : '#ef4444'}; background: rgba(255,255,255,0.03); padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+              <p style="margin-top: 0; color: #94a3b8; font-size: 13px; text-transform: uppercase; font-weight: bold;">${subject}</p>
+              <div style="color: #f1f5f9; font-size: 16px; line-height: 1.7; white-space: pre-wrap;">
+                ${message}
+              </div>
+            </div>
+
+            <div style="text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.6;">
+              <p>This message was dispatched via the Kaa-Rada Central Command System.</p>
+              <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #1e293b;">
+                <p>Stay updated and share live situation reports via our official portal:</p>
+                <a href="https://kaarada.cnbcode.com" style="display: inline-block; background: #38bdf8; color: #000; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px;">Open Hub Dashboard</a>
+              </div>
+            </div>
           </div>
         `
       })
