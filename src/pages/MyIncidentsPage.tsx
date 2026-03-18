@@ -17,10 +17,10 @@ export default function MyIncidentsPage() {
     const fetch = async () => {
       const { data } = await supabase
         .from('incidents')
-        .select('*, profiles(*)')
+        .select('*')
         .eq('reporter_id', user.id)
         .order('created_at', { ascending: false });
-      setIncidents((data as Incident[]) || []);
+      setIncidents((data as any as Incident[]) || []);
       setLoading(false);
     };
     fetch();

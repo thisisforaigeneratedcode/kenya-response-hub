@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const fetchIncidents = async () => {
     let query = supabase
       .from('incidents')
-      .select('*, profiles(*)')
+      .select('*')
       .order('severity_self', { ascending: false })
       .order('created_at', { ascending: false });
 

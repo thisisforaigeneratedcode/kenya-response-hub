@@ -85,7 +85,7 @@ export default function ReportPage() {
       // AI Triage
       setSubmitting(false);
       setTriaging(true);
-      const result = await triageIncident(incident);
+      const result = await triageIncident(incident as any);
       setTriageResult(result);
 
       // Update incident with AI results

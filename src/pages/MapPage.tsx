@@ -19,11 +19,11 @@ export default function MapPage() {
 
   useEffect(() => {
     const fetch = async () => {
-      let query = supabase.from('incidents').select('*, profiles(*)').not('lat', 'is', null).not('lng', 'is', null);
+      let query = supabase.from('incidents').select('*').not('lat', 'is', null).not('lng', 'is', null);
       if (filterCounty !== 'all') query = query.eq('county', filterCounty);
       if (filterSeverity !== 'all') query = query.gte('severity_self', parseInt(filterSeverity));
       const { data } = await query;
-      setIncidents((data as Incident[]) || []);
+      setIncidents((data as any as Incident[]) || []);
     };
     fetch();
 
