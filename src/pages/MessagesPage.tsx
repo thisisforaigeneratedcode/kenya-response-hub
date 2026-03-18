@@ -22,8 +22,8 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!incidentId) return;
     const fetchIncident = async () => {
-      const { data } = await supabase.from('incidents').select('*, profiles(*)').eq('id', incidentId).single();
-      setIncident(data as Incident);
+      const { data } = await supabase.from('incidents').select('*').eq('id', incidentId).single();
+      setIncident(data as any as Incident);
     };
     const fetchMessages = async () => {
       const { data } = await supabase
