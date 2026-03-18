@@ -155,11 +155,48 @@ export async function triageIncident(incident: Partial<Incident>): Promise<{ sev
   }
 }
 
-export async function sendBroadcast(subject: string, message: string): Promise<{ success: boolean; error?: string }> {
+export async function getResponders(): Promise<Profile[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'responder');
+  
+  if (error) throw error;
+  return data as Profile[];
+}
+
+export async function assignResponder(incidentId: string, responderId: string): Promise<void> {
+  // 1. Create assignment record
+  const { error: assignError } = await supabase
+    .from('assignments')
+    .insert({
+      incident_id: incidentId,
+      responder_id: responderId,
+      notes: 'Assigned via Admin Dashboard'
+    });
+  
+  if (assignError) throw assignError;
+
+  // 2. Update incident status
+  const { error: updateError } = await supabase
+    .from('incidents')
+    .update({ status: 'assigned' })
+    .eq('id', incidentId);
+  
+  if (updateError) throw updateError;
+}
+
+export async function sendBroadcast(
+  subject: string, 
+  message: string, 
+  targetUserIds?: string[], 
+  targetEmails?: string[]
+): Promise<{ success: boolean; error?: string }> {
   try {
     const { data, error } = await supabase.functions.invoke('send-broadcast', {
-      body: { subject, message }
+      body: { subject, message, targetUserIds, targetEmails }
     });
+
 
     if (error) {
       throw error;

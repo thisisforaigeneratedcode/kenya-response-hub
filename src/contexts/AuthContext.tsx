@@ -21,48 +21,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', userId)
       .single();
-    setProfile(data as Profile | null);
+    if (error) return null;
+    return data as Profile;
   };
 
   useEffect(() => {
+    // Single source of truth — no duplicate getSession
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+
         if (session?.user) {
-          await fetchProfile(session.user.id);
+          // Defer profile fetch so Supabase internal state settles first
+          setTimeout(async () => {
+            const p = await fetchProfile(session.user.id);
+            setProfile(p);
+            setLoading(false);
+          }, 100);
         } else {
           setProfile(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, meta: { full_name: string; role: string; county: string }) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    meta: { full_name: string; role: string; county: string }
+  ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: window.location.origin },
     });
     if (error) throw error;
+
     if (data.user) {
       const { error: profileError } = await supabase.from('profiles').insert({
         user_id: data.user.id,
@@ -71,16 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         county: meta.county,
       });
       if (profileError) throw profileError;
-      await fetchProfile(data.user.id);
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    if (data.user) {
-      await fetchProfile(data.user.id);
-    }
+    // Profile will be fetched by onAuthStateChange automatically
   };
 
   const signOut = async () => {

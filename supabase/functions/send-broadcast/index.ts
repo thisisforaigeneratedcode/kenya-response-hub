@@ -12,7 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, message } = await req.json()
+    const { subject, message, targetUserIds, targetEmails } = await req.json()
+    console.log(`Broadcast Request: subject="${subject}", targets=${targetUserIds?.length || 0} IDs, ${targetEmails?.length || 0} emails`)
 
     // 1. Initialize Supabase Admin Client
     const supabaseClient = createClient(
@@ -21,31 +22,52 @@ serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // 2. Fetch Responder and Admin Profiles
-    const { data: profiles, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('user_id')
-      .in('role', ['responder', 'admin'])
+    // 2. Determine recipient user IDs
+    let bccList: string[] = []
 
-    if (profileError) throw profileError
+    if (targetEmails && targetEmails.length > 0) {
+      bccList.push(...targetEmails)
+    }
 
-    const responderIds = profiles.map((p: any) => p.user_id)
+    if (targetUserIds && targetUserIds.length > 0) {
+      // Fetch specifically requested users
+      const { data: { users }, error: usersError } = await supabaseClient.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      })
+      if (usersError) throw usersError
+      const targetUsers = users.filter((u: any) => targetUserIds.includes(u.id) && u.email)
+      bccList.push(...targetUsers.map((u: any) => u.email))
+    }
 
-    // 3. Fetch all auth users to get emails
-    const { data: { users }, error: usersError } = await supabaseClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000
-    })
+    // 3. Fallback: If no targets provided, find ALL responders/admins
+    if (bccList.length === 0 && (!targetUserIds || targetUserIds.length === 0) && (!targetEmails || targetEmails.length === 0)) {
+      const { data: profiles, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('user_id')
+        .in('role', ['responder', 'admin'])
 
-    if (usersError) throw usersError
+      if (profileError) throw profileError
+      const responderIds = profiles.map((p: any) => p.user_id)
 
-    // 4. Match emails
-    const bccList = users
-      .filter((u: any) => responderIds.includes(u.id) && u.email)
-      .map((u: any) => u.email)
+      const { data: { users }, error: usersError } = await supabaseClient.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      })
+      if (usersError) throw usersError
+      
+      const matchedEmails = users
+        .filter((u: any) => responderIds.includes(u.id) && u.email)
+        .map((u: any) => u.email)
+      
+      bccList.push(...matchedEmails)
+    }
+
+    // 4. De-duplicate emails
+    bccList = [...new Set(bccList)]
 
     if (bccList.length === 0) {
-      return new Response(JSON.stringify({ success: true, message: 'No responders found.' }), {
+      return new Response(JSON.stringify({ success: true, message: 'No recipients found matching criteria.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }

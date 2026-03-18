@@ -1,30 +1,43 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Incident, Profile, KENYA_COUNTIES } from '@/lib/supabase';
+import { Incident, Profile, KENYA_COUNTIES, getResponders, assignResponder, sendBroadcast } from '@/lib/supabase';
 import { ResponderLayout } from '@/components/ResponderLayout';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Users, AlertTriangle, Shield, Send } from 'lucide-react';
+import { Users, AlertTriangle, Shield, Send, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminPage() {
   const [users, setUsers] = useState<Profile[]>([]);
+  const [responders, setResponders] = useState<Profile[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
   const [broadcastSubject, setBroadcastSubject] = useState('');
   const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastTarget, setBroadcastTarget] = useState<'all' | 'specific' | 'emails'>('all');
+  const [selectedResponderIds, setSelectedResponderIds] = useState<string[]>([]);
+  const [customEmails, setCustomEmails] = useState('');
   const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'incidents' | 'broadcast'>('stats');
 
   useEffect(() => {
     const fetchData = async () => {
       const { data: profilesData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      setUsers((profilesData as Profile[]) || []);
+      const allProfiles = (profilesData as Profile[]) || [];
+      setUsers(allProfiles);
+      setResponders(allProfiles.filter(p => p.role === 'responder' || p.role === 'admin'));
+
       const { data: incidentsData } = await supabase.from('incidents').select('*').order('created_at', { ascending: false });
       setIncidents((incidentsData as any as Incident[]) || []);
+
+      const { data: assignmentsData } = await supabase.from('assignments').select('*');
+      setAssignments(assignmentsData || []);
     };
     fetchData();
   }, []);
@@ -169,25 +182,125 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {incidents.map((inc) => (
-                  <tr key={inc.id} className="border-b border-border/50">
-                    <td className="p-3 text-foreground">{inc.title}</td>
-                    <td className="p-3 text-muted-foreground">{inc.incident_type}</td>
-                    <td className="p-3"><SeverityBadge severity={inc.ai_severity ?? inc.severity_self} size="sm" /></td>
-                    <td className="p-3 text-muted-foreground">{inc.county}</td>
-                    <td className="p-3"><span className="capitalize text-xs">{inc.status}</span></td>
-                    <td className="p-3 text-muted-foreground">{new Date(inc.created_at).toLocaleDateString()}</td>
-                  </tr>
-                ))}
+                {incidents.map((inc) => {
+                  const assignment = assignments.find(a => a.incident_id === inc.id);
+                  const assignedResponder = assignment ? responders.find(r => r.user_id === assignment.responder_id) : null;
+                  
+                  return (
+                    <tr key={inc.id} className="border-b border-border/50">
+                      <td className="p-3 text-foreground">{inc.title}</td>
+                      <td className="p-3 text-muted-foreground">{inc.incident_type}</td>
+                      <td className="p-3"><SeverityBadge severity={inc.ai_severity ?? inc.severity_self} size="sm" /></td>
+                      <td className="p-3 text-muted-foreground">{inc.county}</td>
+                      <td className="p-3">
+                        <Select 
+                          value={assignment?.responder_id || 'unassigned'} 
+                          onValueChange={async (val) => {
+                            if (val === 'unassigned') return;
+                            toast.loading('Assigning responder...');
+                            try {
+                              await assignResponder(inc.id, val);
+                              const { data: assignmentsData } = await supabase.from('assignments').select('*');
+                              setAssignments(assignmentsData || []);
+                              const { data: incidentsData } = await supabase.from('incidents').select('*').order('created_at', { ascending: false });
+                              setIncidents((incidentsData as any as Incident[]) || []);
+                              toast.dismiss();
+                              toast.success('Responder assigned');
+                            } catch (e: any) {
+                              toast.dismiss();
+                              toast.error('Failed to assign: ' + e.message);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-8 text-xs bg-background border-border text-foreground w-40">
+                            <SelectValue placeholder="Assign Responder" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="unassigned">-- Unassigned --</SelectItem>
+                            {responders.map(r => (
+                              <SelectItem key={r.user_id} value={r.user_id}>{r.full_name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="p-3 text-muted-foreground">{new Date(inc.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
 
         {activeTab === 'broadcast' && (
-          <div className="glass-card p-6 max-w-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Broadcast Alert to Responders</h3>
-            <div className="space-y-3">
+          <div className="glass-card p-6 max-w-2xl">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Broadcast Alert</h3>
+            
+            <div className="mb-6 space-y-4">
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Recipients</Label>
+                <div className="flex gap-3">
+                  <Button 
+                    variant={broadcastTarget === 'all' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => setBroadcastTarget('all')}
+                  >
+                    All Responders
+                  </Button>
+                  <Button 
+                    variant={broadcastTarget === 'specific' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => setBroadcastTarget('specific')}
+                  >
+                    Specific Responders
+                  </Button>
+                  <Button 
+                    variant={broadcastTarget === 'emails' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => setBroadcastTarget('emails')}
+                  >
+                    Custom Emails
+                  </Button>
+                </div>
+              </div>
+
+              {broadcastTarget === 'specific' && (
+                <div className="p-4 bg-secondary/30 rounded-lg border border-border">
+                  <Label className="text-xs mb-3 block">Select Responders</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2">
+                    {responders.map(r => (
+                      <div key={r.user_id} className="flex items-center space-x-2 bg-background/50 p-2 rounded border border-border/50">
+                        <Checkbox 
+                          id={`resp-${r.user_id}`} 
+                          checked={selectedResponderIds.includes(r.user_id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) setSelectedResponderIds([...selectedResponderIds, r.user_id]);
+                            else setSelectedResponderIds(selectedResponderIds.filter(id => id !== r.user_id));
+                          }}
+                        />
+                        <label htmlFor={`resp-${r.user_id}`} className="text-xs font-medium cursor-pointer flex-1">
+                          {r.full_name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {broadcastTarget === 'emails' && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Custom Responder Emails (comma separated)</Label>
+                  <Input 
+                    placeholder="e.g. unit1@redcross.org, duty@gov.ke" 
+                    value={customEmails}
+                    onChange={(e) => setCustomEmails(e.target.value)}
+                    className="bg-background border-border text-foreground"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3 pt-4 border-t border-border">
               <Input
                 value={broadcastSubject}
                 onChange={(e) => setBroadcastSubject(e.target.value)}
@@ -201,30 +314,42 @@ export default function AdminPage() {
                 className="bg-background border-border text-foreground min-h-[120px]"
               />
               <Button 
-                className="bg-severity-critical text-foreground gap-2" 
+                className="w-full bg-severity-critical text-foreground gap-2 h-12 text-lg" 
                 onClick={async () => {
                   if (!broadcastSubject || !broadcastMessage) {
                     toast.error('Please enter a subject and message');
                     return;
                   }
+                  
+                  const targetIds = broadcastTarget === 'specific' ? selectedResponderIds : undefined;
+                  const targetEmailsList = broadcastTarget === 'emails' ? customEmails.split(',').map(e => e.trim()).filter(e => e) : undefined;
+
+                  if (broadcastTarget === 'specific' && (!targetIds || targetIds.length === 0)) {
+                    toast.error('Please select at least one responder');
+                    return;
+                  }
+
                   toast.loading('Sending broadcast...');
                   try {
-                    const { sendBroadcast } = await import('@/lib/supabase');
-                    const { success, error } = await sendBroadcast(broadcastSubject, broadcastMessage);
+                    const { success, error } = await sendBroadcast(broadcastSubject, broadcastMessage, targetIds, targetEmailsList);
                     if (success) {
-                      toast.success('Broadcast sent successfully to all responders');
+                      toast.success('Broadcast sent successfully');
                       setBroadcastSubject('');
                       setBroadcastMessage('');
+                      setSelectedResponderIds([]);
+                      setCustomEmails('');
                     } else {
                       throw new Error(error);
                     }
                   } catch (err: any) {
                     toast.error(err.message || 'Failed to send broadcast');
+                  } finally {
+                    toast.dismiss();
                   }
                 }}
               >
-                <Send className="w-4 h-4" />
-                Send Broadcast
+                <Send className="w-5 h-5" />
+                Dispatch Alert
               </Button>
             </div>
           </div>

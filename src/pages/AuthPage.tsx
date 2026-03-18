@@ -18,7 +18,7 @@ export default function AuthPage() {
   const [county, setCounty] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, profile } = useAuth();
+  const { signIn, signUp, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,11 +46,12 @@ export default function AuthPage() {
 
   // Redirect if already authed
   useEffect(() => {
+    if (authLoading) return; // wait for profile to load
     if (profile) {
       const dest = profile.role === 'citizen' ? '/report' : profile.role === 'responder' ? '/dashboard' : '/admin';
       navigate(dest, { replace: true });
     }
-  }, [profile, navigate]);
+  }, [profile, authLoading, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
