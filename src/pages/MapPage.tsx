@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import { supabase, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Incident } from '@/lib/supabase';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { ResponderLayout } from '@/components/ResponderLayout';
 import { Button } from '@/components/ui/button';
