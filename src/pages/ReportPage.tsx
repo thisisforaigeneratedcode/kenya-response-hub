@@ -55,18 +55,24 @@ export default function ReportPage() {
       },
       (error) => {
         setDetectingLocation(false);
+        // Default to Thika if fetching fails
+        setTown('Thika');
+        setCounty('Kiambu');
+        setLat('-1.0333');
+        setLng('37.0667');
+        
         switch (error.code) {
           case 1:
-            toast.error('Permission denied. Please enable location access.');
+            toast.error('Permission denied. Defaulting to Thika.');
             break;
           case 2:
-            toast.error('Location unavailable. Please check your GPS/Network.');
+            toast.error('Location unavailable. Defaulting to Thika.');
             break;
           case 3:
-            toast.error('Location request timed out.');
+            toast.error('Location request timed out. Defaulting to Thika.');
             break;
           default:
-            toast.error('Could not detect location. Please enter manually.');
+            toast.error('Could not detect location. Defaulting to Thika.');
         }
       },
       { timeout: 10000, enableHighAccuracy: true }
@@ -169,23 +175,23 @@ export default function ReportPage() {
       setSubmitted(true);
       toast.success('Incident reported successfully');
 
-      // Automated Alert for High Severity
+      // 1. Send safety guide to victim via email (FOR EVERY REPORT)
+      const { sendBroadcast } = await import('@/lib/supabase');
+      if (user.email) {
+        sendBroadcast(
+          `Personal Safety Guidance: ${finalType}`,
+          `Your report has been received. Please follow these AI-generated safety steps immediately:\n\n${finalTriage.safetyGuide}\n\nResponders have been notified of your location. Stay calm.`,
+          undefined,
+          [user.email]
+        ).catch(e => console.error("Safety email failed:", e));
+      }
+
+      // 2. Automated Alert for Responders (FOR HIGH SEVERITY ONLY)
       if (finalTriage.severity >= 4) {
-        const { sendBroadcast } = await import('@/lib/supabase');
         sendBroadcast(
           `CRITICAL: ${finalType} in ${town || county}`,
           `A high-severity ${finalType} has been reported in ${town ? `${town}, ${county}` : county}.\n\nDescription: ${finalDesc}\n\nView details: ${window.location.origin}/dashboard`
         ).catch(e => console.error("Auto-broadcast failed:", e));
-
-        // ALSO: Send safety guide to victim via email
-        if (user.email) {
-          sendBroadcast(
-            `Safety Guidance: ${finalType} Emergency`,
-            `Your report has been received. Please follow these AI-generated safety steps immediately:\n\n${finalTriage.safetyGuide}\n\nResponders have been notified of your location. Stay calm.`,
-            undefined,
-            [user.email]
-          ).catch(e => console.error("Safety email failed:", e));
-        }
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit report');
