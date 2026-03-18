@@ -12,6 +12,7 @@ import DashboardPage from "./pages/DashboardPage";
 import MapPage from "./pages/MapPage";
 import AdminPage from "./pages/AdminPage";
 import MessagesPage from "./pages/MessagesPage";
+import PresentationPage from "./pages/PresentationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/presentation" element={<PresentationPage />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/report" element={<ProtectedRoute roles={['citizen']}><ReportPage /></ProtectedRoute>} />
       <Route path="/my-incidents" element={<ProtectedRoute roles={['citizen']}><MyIncidentsPage /></ProtectedRoute>} />
