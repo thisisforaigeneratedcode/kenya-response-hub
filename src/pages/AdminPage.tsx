@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Incident, Profile, KENYA_COUNTIES } from '@/lib/supabase';
@@ -199,7 +200,29 @@ export default function AdminPage() {
                 placeholder="Alert message..."
                 className="bg-background border-border text-foreground min-h-[120px]"
               />
-              <Button className="bg-severity-critical text-foreground gap-2" onClick={() => toast.info('Broadcast endpoint not yet configured')}>
+              <Button 
+                className="bg-severity-critical text-foreground gap-2" 
+                onClick={async () => {
+                  if (!broadcastSubject || !broadcastMessage) {
+                    toast.error('Please enter a subject and message');
+                    return;
+                  }
+                  toast.loading('Sending broadcast...');
+                  try {
+                    const { sendBroadcast } = await import('@/lib/supabase');
+                    const { success, error } = await sendBroadcast(broadcastSubject, broadcastMessage);
+                    if (success) {
+                      toast.success('Broadcast sent successfully to all responders');
+                      setBroadcastSubject('');
+                      setBroadcastMessage('');
+                    } else {
+                      throw new Error(error);
+                    }
+                  } catch (err: any) {
+                    toast.error(err.message || 'Failed to send broadcast');
+                  }
+                }}
+              >
                 <Send className="w-4 h-4" />
                 Send Broadcast
               </Button>

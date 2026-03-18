@@ -95,14 +95,82 @@ export function getStatusColor(status: string): string {
   }
 }
 
-// Mock AI triage
-export async function triageIncident(_incident: Partial<Incident>): Promise<{ severity: number; safetyGuide: string }> {
-  await new Promise(resolve => setTimeout(resolve, 2500));
-  const severity = Math.floor(Math.random() * 3) + 3;
-  const guides: Record<number, string> = {
-    3: "Move to higher ground if near water. Avoid walking through flowing water. Stay informed via local radio. Prepare an emergency kit with water, food, and medication.",
-    4: "Evacuate immediately if water levels are rising. Do not attempt to cross flooded roads. Contact emergency services. Move important documents to waterproof containers.",
-    5: "CRITICAL: Evacuate NOW. Move to the nearest designated shelter. Avoid all contact with floodwater — it may be contaminated. Call 999 or your county emergency hotline immediately.",
-  };
-  return { severity, safetyGuide: guides[severity] || guides[3] };
+// Real AI triage using Gemini 1.5 Flash
+export async function triageIncident(incident: Partial<Incident>): Promise<{ severity: number; safetyGuide: string }> {
+  try {
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      throw new Error("Gemini API key is not configured.");
+    }
+
+    const prompt = `
+      You are an emergency disaster response AI for Kenya. 
+      Analyze the following incident report and provide:
+      1. A severity score from 1 (minor) to 5 (critical/life-threatening).
+      2. Life-saving safety guidance for the citizen in 2-3 short, clear sentences.
+
+      Title: ${incident.title}
+      Description: ${incident.description}
+      Type: ${incident.incident_type}
+      County: ${incident.county}
+
+      Return only a JSON object like this:
+      {"severity": 4, "safetyGuide": "Your guide here..."}
+    `;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { response_mime_type: "application/json" }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Gemini API error:", errorData);
+      throw new Error("Failed to reach AI triage service.");
+    }
+
+    const data = await response.json();
+    const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!textResult) {
+      throw new Error("AI failed to generate a response.");
+    }
+
+    const result = JSON.parse(textResult);
+    return {
+      severity: Number(result.severity) || 3,
+      safetyGuide: result.safetyGuide || "Stay safe and wait for responder contact."
+    };
+  } catch (error) {
+    console.error("Triage error:", error);
+    // Fallback to minimal safety info if AI fails
+    return { 
+      severity: incident.severity_self || 3, 
+      safetyGuide: "Stay calm. We have received your report. If in immediate danger, move to the nearest safe ground and contact local authorities." 
+    };
+  }
+}
+
+export async function sendBroadcast(subject: string, message: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-broadcast', {
+      body: { subject, message }
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'Edge function returned failure');
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Broadcast error:", err);
+    return { success: false, error: err.message };
+  }
 }
