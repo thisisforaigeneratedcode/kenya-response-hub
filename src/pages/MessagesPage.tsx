@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, Message, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Message, Incident } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SeverityBadge } from '@/components/SeverityBadge';

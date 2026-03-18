@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase, Incident, Profile, KENYA_COUNTIES } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Incident, Profile, KENYA_COUNTIES } from '@/lib/supabase';
 import { ResponderLayout } from '@/components/ResponderLayout';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { Button } from '@/components/ui/button';

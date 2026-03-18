@@ -5,7 +5,7 @@ import { SeverityRing } from '@/components/SeverityRing';
 import { AlertTriangle, Users, Shield, ArrowRight, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function LandingPage() {
   const [incidentCount, setIncidentCount] = useState(0);

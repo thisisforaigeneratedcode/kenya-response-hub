@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Incident } from '@/lib/supabase';
 import { IncidentCard } from '@/components/IncidentCard';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { ResponderLayout } from '@/components/ResponderLayout';
