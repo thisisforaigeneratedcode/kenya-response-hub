@@ -145,11 +145,11 @@ export default function AuthPage() {
 
           <Button
             type="submit"
-            disabled={loading || (!!signIn && !profile && !!(email && password))}
+            disabled={loading}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
           >
-            {(loading || (!profile && !!(email && password) && !isSignUp)) && <span className="animate-spin text-lg">⟳</span>}
-            {(!profile && !isSignUp && email && password) ? 'Loading Profile...' : (isSignUp ? 'Create Account' : 'Sign In')}
+            {loading && <span className="animate-spin text-lg">⟳</span>}
+            {loading ? (isSignUp ? 'Creating Account...' : 'Signing In...') : (isSignUp ? 'Create Account' : 'Sign In')}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
