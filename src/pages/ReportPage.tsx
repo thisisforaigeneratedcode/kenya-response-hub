@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, KENYA_COUNTIES, INCIDENT_TYPES, triageIncident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { KENYA_COUNTIES, INCIDENT_TYPES, triageIncident } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,7 +85,7 @@ export default function ReportPage() {
       // AI Triage
       setSubmitting(false);
       setTriaging(true);
-      const result = await triageIncident(incident);
+      const result = await triageIncident(incident as any);
       setTriageResult(result);
 
       // Update incident with AI results

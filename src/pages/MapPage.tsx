@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import { supabase, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Incident } from '@/lib/supabase';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { ResponderLayout } from '@/components/ResponderLayout';
 import { Button } from '@/components/ui/button';
@@ -18,11 +19,11 @@ export default function MapPage() {
 
   useEffect(() => {
     const fetch = async () => {
-      let query = supabase.from('incidents').select('*, profiles(*)').not('lat', 'is', null).not('lng', 'is', null);
+      let query = supabase.from('incidents').select('*').not('lat', 'is', null).not('lng', 'is', null);
       if (filterCounty !== 'all') query = query.eq('county', filterCounty);
       if (filterSeverity !== 'all') query = query.gte('severity_self', parseInt(filterSeverity));
       const { data } = await query;
-      setIncidents((data as Incident[]) || []);
+      setIncidents((data as any as Incident[]) || []);
     };
     fetch();
 

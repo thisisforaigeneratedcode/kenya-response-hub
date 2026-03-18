@@ -14,7 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assignments: {
+        Row: {
+          assigned_at: string
+          id: string
+          incident_id: string
+          notes: string | null
+          responder_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          id?: string
+          incident_id: string
+          notes?: string | null
+          responder_id: string
+        }
+        Update: {
+          assigned_at?: string
+          id?: string
+          incident_id?: string
+          notes?: string | null
+          responder_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          ai_safety_guide: string | null
+          ai_severity: number | null
+          county: string
+          created_at: string
+          description: string
+          id: string
+          incident_type: string
+          lat: number | null
+          lng: number | null
+          photo_url: string | null
+          reporter_id: string
+          severity_self: number
+          status: string
+          title: string
+        }
+        Insert: {
+          ai_safety_guide?: string | null
+          ai_severity?: number | null
+          county: string
+          created_at?: string
+          description: string
+          id?: string
+          incident_type: string
+          lat?: number | null
+          lng?: number | null
+          photo_url?: string | null
+          reporter_id: string
+          severity_self?: number
+          status?: string
+          title: string
+        }
+        Update: {
+          ai_safety_guide?: string | null
+          ai_severity?: number | null
+          county?: string
+          created_at?: string
+          description?: string
+          id?: string
+          incident_type?: string
+          lat?: number | null
+          lng?: number | null
+          photo_url?: string | null
+          reporter_id?: string
+          severity_self?: number
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          incident_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          county: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          county: string
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          county?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

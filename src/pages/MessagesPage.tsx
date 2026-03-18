@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, Message, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Message, Incident } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SeverityBadge } from '@/components/SeverityBadge';
@@ -21,16 +22,16 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!incidentId) return;
     const fetchIncident = async () => {
-      const { data } = await supabase.from('incidents').select('*, profiles(*)').eq('id', incidentId).single();
-      setIncident(data as Incident);
+      const { data } = await supabase.from('incidents').select('*').eq('id', incidentId).single();
+      setIncident(data as any as Incident);
     };
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select('*, profiles(*)')
+        .select('*')
         .eq('incident_id', incidentId)
         .order('created_at', { ascending: true });
-      setMessages((data as Message[]) || []);
+      setMessages((data as any as Message[]) || []);
     };
     fetchIncident();
     fetchMessages();

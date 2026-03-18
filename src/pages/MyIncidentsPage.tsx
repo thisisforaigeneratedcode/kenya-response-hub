@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Incident } from '@/lib/supabase';
 import { IncidentCard } from '@/components/IncidentCard';
 import { CitizenLayout } from '@/components/CitizenLayout';
 import { Link } from 'react-router-dom';
@@ -16,10 +17,10 @@ export default function MyIncidentsPage() {
     const fetch = async () => {
       const { data } = await supabase
         .from('incidents')
-        .select('*, profiles(*)')
+        .select('*')
         .eq('reporter_id', user.id)
         .order('created_at', { ascending: false });
-      setIncidents((data as Incident[]) || []);
+      setIncidents((data as any as Incident[]) || []);
       setLoading(false);
     };
     fetch();

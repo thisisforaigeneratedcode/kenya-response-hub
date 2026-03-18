@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, Incident } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Incident } from '@/lib/supabase';
 import { IncidentCard } from '@/components/IncidentCard';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { ResponderLayout } from '@/components/ResponderLayout';
@@ -28,7 +29,7 @@ export default function DashboardPage() {
   const fetchIncidents = async () => {
     let query = supabase
       .from('incidents')
-      .select('*, profiles(*)')
+      .select('*')
       .order('severity_self', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -37,7 +38,7 @@ export default function DashboardPage() {
     if (filterType !== 'all') query = query.eq('incident_type', filterType);
 
     const { data } = await query;
-    setIncidents((data as Incident[]) || []);
+    setIncidents((data as any as Incident[]) || []);
     setLoading(false);
   };
 
