@@ -192,7 +192,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-sm text-foreground/80 leading-relaxed">{selectedIncident.description}</p>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>County: {selectedIncident.county}</p>
+                  <p>Location: {selectedIncident.town ? `${selectedIncident.town}, ${selectedIncident.county}` : selectedIncident.county}</p>
                   {selectedIncident.lat && <p>GPS: {selectedIncident.lat}, {selectedIncident.lng}</p>}
                   <p>Reporter: {selectedIncident.profiles?.full_name || 'Unknown'}</p>
                 </div>

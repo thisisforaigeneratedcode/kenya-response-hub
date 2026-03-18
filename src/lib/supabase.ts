@@ -27,6 +27,7 @@ export type Incident = {
   lat: number | null;
   lng: number | null;
   county: string;
+  town: string | null;
   photo_url: string | null;
   status: 'pending' | 'assigned' | 'resolved';
   created_at: string;
@@ -95,7 +96,7 @@ export function getStatusColor(status: string): string {
   }
 }
 
-// Real AI triage using Gemini 1.5 Flash
+// Real AI triage using Gemini 2.0 Flash
 export async function triageIncident(incident: Partial<Incident>): Promise<{ severity: number; safetyGuide: string }> {
   try {
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -118,7 +119,7 @@ export async function triageIncident(incident: Partial<Incident>): Promise<{ sev
       {"severity": 4, "safetyGuide": "Your guide here..."}
     `;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

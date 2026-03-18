@@ -105,6 +105,7 @@ export type Database = {
           severity_self: number
           status: string
           title: string
+          town: string | null
           updated_at: string
         }
         Insert: {
@@ -127,6 +128,7 @@ export type Database = {
           severity_self?: number
           status?: string
           title: string
+          town?: string | null
           updated_at?: string
         }
         Update: {
@@ -149,6 +151,7 @@ export type Database = {
           severity_self?: number
           status?: string
           title?: string
+          town?: string | null
           updated_at?: string
         }
         Relationships: []

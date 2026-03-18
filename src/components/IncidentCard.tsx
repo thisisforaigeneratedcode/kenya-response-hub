@@ -37,7 +37,7 @@ export function IncidentCard({ incident, onClick, showTimeline, className }: Inc
           <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <MapPin className="w-3 h-3" />
-              {incident.county}
+              {incident.town ? `${incident.town}, ${incident.county}` : incident.county}
             </span>
             <span className="inline-flex items-center gap-1">
               <Clock className="w-3 h-3" />

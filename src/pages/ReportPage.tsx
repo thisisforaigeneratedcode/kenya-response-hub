@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { KENYA_COUNTIES, INCIDENT_TYPES, triageIncident } from '@/lib/supabase';
@@ -14,6 +14,7 @@ import { MapPin, Upload, Loader2, CheckCircle2, Navigation } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 import { toast } from 'sonner';
 import { CitizenLayout } from '@/components/CitizenLayout';
+import { motion } from 'framer-motion';
 
 export default function ReportPage() {
   const { user } = useAuth();
@@ -22,14 +23,20 @@ export default function ReportPage() {
   const [incidentType, setIncidentType] = useState('');
   const [severity, setSeverity] = useState([3]);
   const [county, setCounty] = useState('');
+  const [town, setTown] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
+  const [showCoords, setShowCoords] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [triaging, setTriaging] = useState(false);
   const [triageResult, setTriageResult] = useState<{ severity: number; safetyGuide: string } | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  
+  useEffect(() => {
+    detectLocation();
+  }, []);
 
   const detectLocation = () => {
     setDetectingLocation(true);
@@ -73,6 +80,7 @@ export default function ReportPage() {
           incident_type: incidentType,
           severity_self: severity[0],
           county,
+          town,
           lat: lat ? parseFloat(lat) : null,
           lng: lng ? parseFloat(lng) : null,
           photo_url: photoUrl,
@@ -195,29 +203,85 @@ export default function ReportPage() {
             </div>
           </div>
 
-          <div>
-            <Label className="text-foreground">County</Label>
-            <Select value={county} onValueChange={setCounty} required>
-              <SelectTrigger className="bg-background border-border text-foreground mt-1">
-                <SelectValue placeholder="Select county" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border max-h-60">
-                {KENYA_COUNTIES.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-foreground">County</Label>
+              <Select value={county} onValueChange={setCounty} required>
+                <SelectTrigger className="bg-background border-border text-foreground mt-1">
+                  <SelectValue placeholder="Select county" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border max-h-60">
+                  {KENYA_COUNTIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-foreground">Town / Nearest Landmark</Label>
+              <Input 
+                value={town} 
+                onChange={(e) => setTown(e.target.value)} 
+                placeholder="e.g. Kisumu CBD, Nyalenda B" 
+                className="bg-background border-border text-foreground mt-1" 
+                required 
+              />
+            </div>
           </div>
 
-          <div>
-            <Label className="text-foreground">Location</Label>
-            <div className="flex gap-2 mt-1">
-              <Input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitude" className="bg-background border-border text-foreground" />
-              <Input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitude" className="bg-background border-border text-foreground" />
-              <Button type="button" variant="outline" onClick={detectLocation} disabled={detectingLocation} className="border-border-strong text-foreground hover:bg-secondary shrink-0">
-                {detectingLocation ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-foreground">Precise Location</Label>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowCoords(!showCoords)}
+                className="text-xs text-muted-foreground hover:text-primary"
+              >
+                {showCoords ? 'Hide Coordinates' : 'Edit Coordinates'}
               </Button>
             </div>
+            
+            <div className={`p-4 rounded-lg border flex items-center justify-between transition-colors ${lat ? 'bg-success/5 border-success/20' : 'bg-muted/50 border-border'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-full ${lat ? 'bg-success/20 text-success' : 'bg-muted-foreground/20 text-muted-foreground'}`}>
+                  <Navigation className={`w-4 h-4 ${detectingLocation ? 'animate-pulse' : ''}`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {detectingLocation ? 'Detecting location...' : lat ? 'Coordinates Captured' : 'Location access required'}
+                  </p>
+                  {lat && !showCoords && (
+                    <p className="text-xs text-muted-foreground">
+                      {lat.slice(0, 8)}, {lng.slice(0, 8)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={detectLocation} 
+                disabled={detectingLocation} 
+                className="border-border-strong text-foreground hover:bg-secondary h-8 px-3"
+              >
+                {detectingLocation ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <MapPin className="w-3 h-3 mr-2" />}
+                {lat ? 'Refresh' : 'Detect'}
+              </Button>
+            </div>
+
+            {showCoords && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="flex gap-2 mt-2"
+              >
+                <Input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitude" className="bg-background border-border text-foreground" />
+                <Input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitude" className="bg-background border-border text-foreground" />
+              </motion.div>
+            )}
           </div>
 
           <div>
