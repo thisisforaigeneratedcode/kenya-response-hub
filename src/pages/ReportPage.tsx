@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { AISafetyGuide } from '@/components/AISafetyGuide';
-import { MapPin, Upload, Loader2, CheckCircle2, Navigation, MessageCircle } from 'lucide-react';
+import { MapPin, Upload, Loader2, CheckCircle2, Navigation } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 import { toast } from 'sonner';
 import { CitizenLayout } from '@/components/CitizenLayout';
 
@@ -116,12 +117,12 @@ export default function ReportPage() {
           
           <div className="glass-card bg-[#25D366]/5 border-[#25D366]/20 p-5 mb-8 text-center rounded-xl mx-auto max-w-md">
             <h3 className="font-semibold text-foreground text-sm flex items-center justify-center gap-2">
-              <MessageCircle className="w-5 h-5 text-[#25D366]" />
+              <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
               Your report has been submitted. Stay informed:
             </h3>
             <a href="https://whatsapp.com/channel/0029Vb7OLvnJuyA6FLgPyg2w" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block w-full">
               <Button className="bg-[#25D366] hover:bg-[#1DA851] text-white font-medium shadow-md shadow-[#25D366]/20 gap-2 w-full">
-                <MessageCircle className="w-4 h-4 fill-current" />
+                <WhatsAppIcon className="w-4 h-4 fill-current" />
                 Follow our WhatsApp channel for updates
               </Button>
             </a>

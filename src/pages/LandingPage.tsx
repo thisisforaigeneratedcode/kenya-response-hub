@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LiveCounter } from '@/components/LiveCounter';
-import { AlertTriangle, Users, Shield, ArrowRight, Radio, MessageCircle } from 'lucide-react';
+import { AlertTriangle, Users, Shield, ArrowRight, Radio } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -111,7 +112,7 @@ export default function LandingPage() {
         <div className="bg-[#25D366]/10 border border-[#25D366]/30 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-sm">
           <div className="flex-1 text-center md:text-left">
             <h3 className="text-xl md:text-2xl font-bold text-foreground flex items-center justify-center md:justify-start gap-2">
-              <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-[#25D366]" />
+              <WhatsAppIcon className="w-5 h-5 md:w-6 md:h-6 text-[#25D366]" />
               Get real-time flood alerts
             </h3>
             <p className="text-muted-foreground mt-2 text-sm md:text-base">
@@ -127,7 +128,7 @@ export default function LandingPage() {
           </div>
           <a href="https://whatsapp.com/channel/0029Vb7OLvnJuyA6FLgPyg2w" target="_blank" rel="noopener noreferrer" className="w-full md:w-auto shrink-0">
             <Button size="lg" className="w-full md:w-auto bg-[#25D366] hover:bg-[#1DA851] text-white font-bold shadow-lg shadow-[#25D366]/20 gap-2">
-              <MessageCircle className="w-5 h-5 fill-current" />
+              <WhatsAppIcon className="w-5 h-5 fill-current" />
               Join Kaa Rada Floods Alert
             </Button>
           </a>
@@ -201,7 +202,7 @@ export default function LandingPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-[#25D366] hover:text-[#1DA851] font-medium transition-colors"
             >
-              <MessageCircle className="w-5 h-5 fill-current" />
+              <WhatsAppIcon className="w-5 h-5 fill-current" />
               <span>Flood Alerts Channel</span>
             </a>
             <p className="text-sm text-muted-foreground">
