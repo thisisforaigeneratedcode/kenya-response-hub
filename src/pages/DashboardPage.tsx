@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { KENYA_COUNTIES, INCIDENT_TYPES } from '@/lib/supabase';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
@@ -73,11 +73,25 @@ export default function DashboardPage() {
         responder_id: user.id,
       });
       await supabase.from('incidents').update({ status: 'assigned' }).eq('id', selectedIncident.id);
+      
+      // Notify reporter that help is coming
+      const { sendBroadcast } = await import('@/lib/supabase');
+      if (selectedIncident.profiles?.user_id) {
+        // We need the reporter's email. Since we have profiles in the card, we might have it or need to fetch it.
+        // Actually, sendBroadcast handles targetUserIds.
+        sendBroadcast(
+          `Help is on the way: ${profile?.full_name || 'A Responder'} assigned`,
+          `Good news: Responder ${profile?.full_name || 'an official'} has been assigned to your report.\n\nThey are now coordinating your rescue/assistance. You can communicate directly with them via the Live Chat in your dashboard.\n\nStay safe.`,
+          [selectedIncident.reporter_id]
+        ).catch(e => console.error("Assignment email failed:", e));
+      }
+
       toast.success('Incident assigned to you');
       setSelectedIncident({ ...selectedIncident, status: 'assigned' });
       fetchIncidents();
       fetchStats();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to assign');
     }
     setAssigning(false);
