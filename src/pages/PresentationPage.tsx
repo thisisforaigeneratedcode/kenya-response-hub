@@ -11,7 +11,9 @@ import {
   Users,
   Radio,
   BarChart3,
-  Phone
+  Phone,
+  Layers,
+  Code
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WhatsAppIcon } from '@/components/WhatsAppIcon';
@@ -77,6 +79,34 @@ const slides = [
     ],
     icon: <WhatsAppIcon className="w-16 h-16 text-[#25D366]" />,
     gradient: "from-[#25D366]/20 via-background to-background"
+  },
+  {
+    id: 'architecture',
+    title: "System Architecture",
+    subtitle: "Modern, Serverless, Event-Driven",
+    content: "A robust engineering foundation designed for 99.9% uptime during regional crises.",
+    points: [
+      "Supabase Edge Functions for global low-latency",
+      "PostgreSQL with Row-Level Security (RLS)",
+      "Real-time Event Bus for instant coordination",
+      "Vercel Edge Deployment for instant loading"
+    ],
+    icon: <Layers className="w-16 h-16 text-orange-500" />,
+    gradient: "from-orange-500/20 via-background to-background"
+  },
+  {
+    id: 'stack',
+    title: "The Tech Stack",
+    subtitle: "Built with Cutting-Edge Tools",
+    content: "We chose technologies that prioritize safety, developer velocity, and real-time reliability.",
+    points: [
+      "React 18 & Vite (Fast Frontend)",
+      "Google Gemini 1.5 Flash (AI Triage)",
+      "Supabase (Auth & Realtime Database)",
+      "Tailwind CSS & Shadcn/UI (Premium UX)"
+    ],
+    icon: <Code className="w-16 h-16 text-cyan-400" />,
+    gradient: "from-cyan-400/20 via-background to-background"
   },
   {
     id: 'impact',
