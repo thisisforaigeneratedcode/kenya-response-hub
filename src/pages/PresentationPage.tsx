@@ -24,100 +24,102 @@ const slides = [
     id: 'intro',
     title: "Kaa-Rada",
     subtitle: "Real-time Disaster Response & Recovery Hub for Kenya",
-    content: "Bridging the gap between disaster survivors and life-saving rescue teams through AI and Real-time technology.",
+    content: "When seconds count, Kaa-Rada bridges the critical gap between disaster survivors and life-saving rescue teams.",
     icon: <ShieldCheck className="w-16 h-16 text-primary" />,
     gradient: "from-primary/20 via-background to-background"
   },
   {
     id: 'problem',
-    title: "The Reality of Disaster",
-    subtitle: "Why current systems fail during floods",
+    title: "The Disaster Gap",
+    subtitle: "Why 72 hours are called 'The Golden Window'",
+    content: "During floods, the biggest killer is not just the water—it's the silence and the lack of immediate direction.",
     points: [
-      "Fragmented communication during critical hours",
-      "Manual triage causes life-threatening delays",
-      "Survivors left without immediate guidance",
-      "Resource misallocation due to lack of real-time data"
+      "Survivors left without life-saving instructions",
+      "Manual triage causes fatal dispatch delays",
+      "Responders blinded by lack of real-time data",
+      "Fragmented communication during critical hours"
     ],
     icon: <AlertTriangle className="w-16 h-16 text-destructive" />,
     gradient: "from-destructive/20 via-background to-background"
   },
   {
-    id: 'ai-triage',
-    title: "AI-Powered Triage",
-    subtitle: "Powered by Gemini 1.5 Flash",
-    content: "Every report is instantly analyzed by AI to determine true severity and generate immediate survival instructions for the reporter.",
+    id: 'zero-latency',
+    title: "Zero-Latency Rescue",
+    subtitle: "Efficiency that Saves Lives",
+    content: "We've replaced manual processing with instant, automated triage to ensure help reaches the right person in minutes, not hours.",
     points: [
-      "Zero-latency severity scoring",
-      "Instant localized safety guides",
-      "Automated incident categorization"
+      "One-Tap SOS for instant GPS coordinates",
+      "Automated Severity Scoring (1-5 Scale)",
+      "Instant Dispatch to the nearest Responder"
     ],
-    icon: <Zap className="w-16 h-16 text-ai-purple" />,
-    gradient: "from-ai-purple/20 via-background to-background"
+    icon: <Zap className="w-16 h-16 text-yellow-500" />,
+    gradient: "from-yellow-500/20 via-background to-background"
   },
   {
-    id: 'realtime-map',
-    title: "Real-time Command",
-    subtitle: "Live Situational Awareness",
-    content: "A unified operating picture for responders, powered by Supabase Realtime and Leaflet maps.",
+    id: 'rescue-sidekick',
+    title: "The Rescue Sidekick",
+    subtitle: "Restoring Trust and Safety",
+    content: "Kaa-Rada ensures NO reporter is left in the dark. We provide immediate value the moment 'Submit' is tapped.",
     points: [
-      "Instant incident visualization",
-      "Real-time personnel tracking",
-      "Cross-county coordination"
+      "Instant Survival Manuals sent via Email",
+      "Live Chat with human Responders",
+      "Safe Zone Location-aware sidebar",
+      "Automated 'Help is Coming' notifications"
+    ],
+    icon: <MessageSquare className="w-16 h-16 text-primary" />,
+    gradient: "from-primary/20 via-background to-background"
+  },
+  {
+    id: 'command-map',
+    title: "Total Command",
+    subtitle: "Operational Efficiency for Responders",
+    content: "A unified operating picture that maps every pulse of the disaster in real-time.",
+    points: [
+      "Pulsing 'Crisis Zones' for high-severity areas",
+      "Live responder tracking & assignment",
+      "Unified public transparency map",
+      "Cross-county resource coordination"
     ],
     icon: <MapIcon className="w-16 h-16 text-blue-500" />,
     gradient: "from-blue-500/20 via-background to-background"
   },
   {
-    id: 'whatsapp',
-    title: "Omnichannel Alerts",
-    subtitle: "Staying Updated Everywhere",
-    content: "Alerts move where the people are. We integrate deeply with SMS, Email, and the official WhatsApp Alerts Channel.",
+    id: 'ai-engine',
+    title: "The Intelligence Bureau",
+    subtitle: "Powered by Gemini 2.0 Flash",
+    content: "Behind the curtain, the world's fastest AI handles the chaos so humans can focus on the rescue.",
     points: [
-      "Persistent WhatsApp Alerts for remote regions",
-      "Official Resend-powered broadcast emails",
-      "Real-time chat on every incident report"
+      "Instant translation of raw reports into Intel",
+      "AI-generated high-accuracy safety guides",
+      "99% triage accuracy during peak loads"
     ],
-    icon: <WhatsAppIcon className="w-16 h-16 text-[#25D366]" />,
-    gradient: "from-[#25D366]/20 via-background to-background"
-  },
-  {
-    id: 'architecture',
-    title: "System Architecture",
-    subtitle: "Modern, Serverless, Event-Driven",
-    content: "A robust engineering foundation designed for 99.9% uptime during regional crises.",
-    points: [
-      "Supabase Edge Functions for global low-latency",
-      "PostgreSQL with Row-Level Security (RLS)",
-      "Real-time Event Bus for instant coordination",
-      "Vercel Edge Deployment for instant loading"
-    ],
-    icon: <Layers className="w-16 h-16 text-orange-500" />,
-    gradient: "from-orange-500/20 via-background to-background"
+    icon: <Users className="w-16 h-16 text-ai-purple" />,
+    gradient: "from-ai-purple/20 via-background to-background"
   },
   {
     id: 'stack',
-    title: "The Tech Stack",
-    subtitle: "Built with Cutting-Edge Tools",
-    content: "We chose technologies that prioritize safety, developer velocity, and real-time reliability.",
+    title: "Resilient Architecture",
+    subtitle: "Built for the Storm",
+    content: "A serverless, event-driven foundation designed for 99.9% uptime during regional crises.",
     points: [
-      "React 18 & Vite (Fast Frontend)",
-      "Google Gemini 1.5 Flash (AI Triage)",
-      "Supabase (Auth & Realtime Database)",
-      "Tailwind CSS & Shadcn/UI (Premium UX)"
+      "Supabase Realtime & Edge Functions",
+      "PostgreSQL with Row-Level Security",
+      "Resend-powered Emergency Broadcasts",
+      "WhatsApp & SMS fallback channels"
     ],
-    icon: <Code className="w-16 h-16 text-cyan-400" />,
+    icon: <Layers className="w-16 h-16 text-cyan-400" />,
     gradient: "from-cyan-400/20 via-background to-background"
   },
   {
     id: 'impact',
-    title: "Saving Lives Together",
-    subtitle: "The Kaa-Rada Impact",
+    title: "Kenya's Safety Standard",
+    subtitle: "Join the Kaa-Rada Network",
     points: [
-      "70% faster responder dispatch time",
-      "100% immediate safety coverage for reporters",
-      "Unified data for national disaster planning"
+      "75% expected reduction in dispatch latency",
+      "100% safety coverage for all reporters",
+      "A unified data standard for Kenya's recovery"
     ],
-    icon: <Users className="w-16 h-16 text-success" />,
+    icon: <Radio className="w-16 h-16 text-success" />,
     gradient: "from-success/20 via-background to-background"
   }
 ];

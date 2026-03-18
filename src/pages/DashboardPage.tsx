@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, CheckCircle2, User, X, Send, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, User, X, Send, Loader2, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
-import { KENYA_COUNTIES, INCIDENT_TYPES } from '@/lib/supabase';
+import { KENYA_COUNTIES, INCIDENT_TYPES, Message } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
@@ -22,6 +24,7 @@ export default function DashboardPage() {
   const [filterCounty, setFilterCounty] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [messageText, setMessageText] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
   const [assigning, setAssigning] = useState(false);
 
   const [stats, setStats] = useState({ total: 0, critical: 0, mine: 0, resolved: 0 });
@@ -63,6 +66,36 @@ export default function DashboardPage() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [filterStatus, filterCounty, filterType]);
+
+  useEffect(() => {
+    if (!selectedIncident) return;
+    
+    // Explicitly fetch messages for the selected incident
+    const syncMessages = async () => {
+      const { data } = await supabase
+        .from('messages')
+        .select('*, profiles(*)')
+        .eq('incident_id', selectedIncident.id)
+        .order('created_at', { ascending: true });
+      setMessages((data as any as Message[]) || []);
+    };
+    
+    syncMessages();
+
+    const msgChannel = supabase
+      .channel(`incident-chat-${selectedIncident.id}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages', 
+        filter: `incident_id=eq.${selectedIncident.id}` 
+      }, () => {
+        syncMessages();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(msgChannel); };
+  }, [selectedIncident?.id]);
 
   const assignToMe = async () => {
     if (!selectedIncident || !user) return;
@@ -225,18 +258,50 @@ export default function DashboardPage() {
                     Assign to Me
                   </Button>
                 )}
-                <div className="flex gap-2">
-                  <Input
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="Send message to reporter..."
-                    className="bg-background border-border text-foreground text-sm"
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                  />
-                  <Button size="sm" onClick={sendMessage} className="bg-primary text-primary-foreground shrink-0">
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
+                {selectedIncident.status !== 'pending' && (
+                  <div className="space-y-3 pt-4 border-t border-border">
+                    <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Live Conversation</h5>
+                    <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                      {messages.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic py-2">No messages in this thread yet.</p>
+                      ) : (
+                        messages.map((m) => {
+                          const isMe = m.sender_id === user?.id;
+                          return (
+                            <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                              <div className={`px-3 py-2 rounded-xl text-xs max-w-[90%] ${isMe ? 'bg-primary/20 text-foreground' : 'bg-secondary text-foreground'}`}>
+                                <p>{m.content}</p>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground mt-0.5 opacity-60">
+                                {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Input
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        placeholder="Send message to reporter..."
+                        className="bg-background border-border text-xs h-9"
+                        onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                      />
+                      <Button size="sm" onClick={sendMessage} className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 h-9 w-9 p-0">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <Link to={`/messages/${selectedIncident.id}`}>
+                      <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5 gap-2 mt-2 font-bold text-xs h-9">
+                        <MessageSquare className="w-4 h-4" />
+                        OPEN FULL CHAT
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           )}

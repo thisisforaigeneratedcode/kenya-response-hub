@@ -22,12 +22,17 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!incidentId) return;
+
     const fetchIncident = async () => {
-      const { data } = await supabase.from('incidents').select('*, profiles(*)').eq('id', incidentId).single();
+      console.log("Fetching incident context:", incidentId);
+      const { data, error } = await supabase.from('incidents').select('*, profiles(*)').eq('id', incidentId).single();
+      if (error) {
+        console.error("Error fetching incident:", error);
+        return;
+      }
       const incData = data as any as Incident;
       setIncident(incData);
       
-      // Fetch nearby shelters based on county
       if (incData.county) {
         const { data: shelterData } = await supabase
           .from('shelters' as any)
@@ -37,29 +42,53 @@ export default function MessagesPage() {
         setShelters(shelterData || []);
       }
     };
+
     const fetchMessages = async () => {
-      const { data } = await supabase
+      console.log("Fetching messages for:", incidentId);
+      const { data, error } = await supabase
         .from('messages')
         .select('*, profiles(*)')
         .eq('incident_id', incidentId)
         .order('created_at', { ascending: true });
+      if (error) {
+        console.error("Error fetching messages:", error);
+        return;
+      }
       setMessages((data as any as Message[]) || []);
     };
+
     fetchIncident();
     fetchMessages();
 
+    console.log("Subscribing to real-time updates for incident:", incidentId);
     const channel = supabase
-      .channel(`messages-updates-${incidentId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `incident_id=eq.${incidentId}` }, (payload) => {
-        // Need to fetch user details for new message if not provided in payload
+      .channel(`incident-live-${incidentId}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages', 
+        filter: `incident_id=eq.${incidentId}` 
+      }, (payload) => {
+        console.log("New real-time message received:", payload);
         fetchMessages();
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'incidents', filter: `id=eq.${incidentId}` }, (payload) => {
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'incidents', 
+        filter: `id=eq.${incidentId}` 
+      }, (payload) => {
+        console.log("Incident status updated real-time:", payload);
         setIncident(payload.new as Incident);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Real-time subscription status:", status);
+      });
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      console.log("Cleaning up channels for:", incidentId);
+      supabase.removeChannel(channel); 
+    };
   }, [incidentId]);
 
   useEffect(() => {

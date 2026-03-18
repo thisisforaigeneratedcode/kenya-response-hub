@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Incident } from '@/lib/supabase';
 import { IncidentCard } from '@/components/IncidentCard';
+import { StatusTimeline } from '@/components/StatusTimeline';
 import { CitizenLayout } from '@/components/CitizenLayout';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -72,11 +73,14 @@ export default function MyIncidentsPage() {
         ) : (
           <div className="grid gap-4">
             {incidents.map((inc) => (
-              <div key={inc.id} className="relative group">
-                <IncidentCard incident={inc} showTimeline className="bg-card/40 hover:bg-card/60" />
-                <div className="absolute right-4 top-4 flex items-center gap-2">
-                   <Link to={`/messages/${inc.id}`}>
-                     <Button size="sm" className="bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold transition-all">
+              <div key={inc.id} className="glass-card overflow-hidden hover:border-primary/50 transition-all border border-border/50">
+                <IncidentCard incident={inc} showTimeline={false} className="border-none bg-transparent shadow-none" />
+                <div className="px-4 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 pt-4 bg-muted/5">
+                   <div className="w-full sm:w-auto">
+                     <StatusTimeline status={inc.status} />
+                   </div>
+                   <Link to={`/messages/${inc.id}`} className="w-full sm:w-auto">
+                     <Button size="sm" className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold transition-all px-8">
                        OPEN LIVE CHAT
                      </Button>
                    </Link>
