@@ -22,8 +22,8 @@ export default function AdminPage() {
     const fetchData = async () => {
       const { data: profilesData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
       setUsers((profilesData as Profile[]) || []);
-      const { data: incidentsData } = await supabase.from('incidents').select('*, profiles(*)').order('created_at', { ascending: false });
-      setIncidents((incidentsData as Incident[]) || []);
+      const { data: incidentsData } = await supabase.from('incidents').select('*').order('created_at', { ascending: false });
+      setIncidents((incidentsData as any as Incident[]) || []);
     };
     fetchData();
   }, []);

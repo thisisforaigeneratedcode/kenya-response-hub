@@ -28,10 +28,10 @@ export default function MessagesPage() {
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select('*, profiles(*)')
+        .select('*')
         .eq('incident_id', incidentId)
         .order('created_at', { ascending: true });
-      setMessages((data as Message[]) || []);
+      setMessages((data as any as Message[]) || []);
     };
     fetchIncident();
     fetchMessages();

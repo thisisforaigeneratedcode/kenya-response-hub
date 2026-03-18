@@ -38,7 +38,7 @@ export default function DashboardPage() {
     if (filterType !== 'all') query = query.eq('incident_type', filterType);
 
     const { data } = await query;
-    setIncidents((data as Incident[]) || []);
+    setIncidents((data as any as Incident[]) || []);
     setLoading(false);
   };
 
